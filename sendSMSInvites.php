@@ -73,8 +73,7 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 				$participantToken = $ourTokenData->token;
 				$participantFirstName = (string)$ourTokenData->firstname;
 				$participantLastName = (string)$ourTokenData->lastname;
-				// !!! The following link will work after installing the plugin in Limesurvey 	!!!
-				$surveyLink = 'http://SERVER_URL/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
+				$surveyLink = 'http://'. $_SERVER['SERVER_NAME'] . '/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
 				#$surveyLink = "http://localhost:8000/index.php?r=survey/index&sid=" . $surveyId .'&token='. $participantToken;	//--> FOR TESTING on localhost:
 				
 				$google_api_key="GOOGLE_API_KEY";
@@ -112,7 +111,6 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 				$query_parameters=http_build_query($parameters);
 				$result_of_post = $this->httpPost($SMS_service_url,$query_parameters);
 				if($result_of_post === FALSE){
-					echo(curl_error($curlHandle));
 					echo("SMS not sent. Please contact the administrator at survey_admin@xyz.com");
 				}
 			}
