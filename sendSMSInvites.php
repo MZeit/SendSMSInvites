@@ -16,6 +16,13 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 	static protected $description = "Send SMS Functionality";
 	static protected $name = 'sendSMSInvites';
 	
+	protected $plugin_configs = array(
+		'google_api_key' => '******************************',
+		'SMS_service_url' => '*****************************',
+		'SMS_Provider_Username' => '*****',
+		'SMS_Provider_Passowrd' => '********'
+	);
+	
 	protected $settings =array(
 		'EnableSendSMS' => array(
 			'type' => 'select',
@@ -34,6 +41,7 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 			'default'=>"Dear {FIRSTNAME} {LASTNAME}, \n We invite you to participate in the survey below: \n {SURVEYURL} \n Survey Team",
 		)
 	);
+	
 	// Register custom function/s
 	public function init()
 	{
@@ -74,16 +82,14 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 				$participantFirstName = (string)$ourTokenData->firstname;
 				$participantLastName = (string)$ourTokenData->lastname;
 				$surveyLink = 'http://'. $_SERVER['SERVER_NAME'] . '/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
-				#$surveyLink = "http://localhost:8000/index.php?r=survey/index&sid=" . $surveyId .'&token='. $participantToken;	//--> FOR TESTING on localhost:
 				
-				$google_api_key="GOOGLE_API_KEY";
-				$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=".$google_api_key; 
+				$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=". $this->plugin_configs['google_api_key']; 
 				$shorten_parameters = array("longUrl" => $surveyLink);
-				$CONTENT_TYPE = "Content-Type:application/json";
+				$content_type = "Content-Type:application/json";
 				$jsonrequest = json_encode($shorten_parameters);
 				$short_URL="";			
 				
-				$response = $this->httpPost($api_url,$jsonrequest,$CONTENT_TYPE);				
+				$response = $this->httpPost($api_url,$jsonrequest,$content_type);				
 				$decoded_response = json_decode($response);
 				
 				if (json_last_error() == JSON_ERROR_NONE){
@@ -107,9 +113,9 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 								
 				// setting up the connection with SMS Service Provider then sending SMS msg
 				$SMS_service_url= "SMS_Provider_API";
-				$parameters=array("username" => "SMS_Provider_Username", "password" => "SMS_Provider_Password", "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent);
+				$parameters=array("username" => $this->plugin_configs['SMS_Provider_Username'], "password" => $this->plugin_configs['SMS_Provider_Passowrd'], "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent);
 				$query_parameters=http_build_query($parameters);
-				$result_of_post = $this->httpPost($SMS_service_url,$query_parameters);
+				$result_of_post = $this->httpPost($this->plugin_configs['SMS_service_url'],$query_parameters);
 				if($result_of_post === FALSE){
 					echo("SMS not sent. Please contact the administrator at survey_admin@xyz.com");
 				}
@@ -163,22 +169,22 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
             'name' => get_class($this),
             'settings' => array(
                 'EnableSendSMS' => array(
-					'type' => 'select',
-					'options'=>array(
-						0=>'No',
-						1=>'Yes'
-					),
-					'default'=>0,
-					'label' => 'Enable sending SMS invites to mobiles?',
-                    'current' => $this->get('EnableSendSMS', 'Survey', $event->get('survey'), $this->get('EnableSendSMS',null,null,$this->settings['EnableSendSMS']['default'])),
+			'type' => 'select',
+			'options'=>array(
+				0=>'No',
+				1=>'Yes'
+			),
+			'default'=>0,
+			'label' => 'Enable sending SMS invites to mobiles?',
+                    	'current' => $this->get('EnableSendSMS', 'Survey', $event->get('survey'), $this->get('EnableSendSMS',null,null,$this->settings['EnableSendSMS']['default'])),
                 ),
                 'MessageBody'=>array(
-					'type'=>'text',
-					'label'=>'Enter the message body to be sent to survey participant\'s mobile:',
-					'help' =>'You may use the placeholders {FIRSTNAME}, {LASTNAME} and {SURVEYURL}.',
-					'default'=>"Dear {FIRSTNAME} {LASTNAME}, \n We invite you to participate in the survey below: \n {SURVEYURL} \n Survey Team",
-					'current' => $this->get('MessageBody', 'Survey', $event->get('survey'),$this->get('MessageBody',null,null,$this->settings['MessageBody']['default'])),
-				)
+			'type'=>'text',
+			'label'=>'Enter the message body to be sent to survey participant\'s mobile:',
+			'help' =>'You may use the placeholders {FIRSTNAME}, {LASTNAME} and {SURVEYURL}.',
+			'default'=>"Dear {FIRSTNAME} {LASTNAME}, \n We invite you to participate in the survey below: \n {SURVEYURL} \n Survey Team",
+			'current' => $this->get('MessageBody', 'Survey', $event->get('survey'),$this->get('MessageBody',null,null,$this->settings['MessageBody']['default'])),
+		)
             )
          ));
     }
