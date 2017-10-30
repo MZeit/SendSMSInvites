@@ -7,7 +7,7 @@ This plugin can be used in the case where the email field is missing/NA for some
 
 ```
 firstname	| lastname | email			| Mobile Number
--------------------------------------------------------------
+---------------------------------------------------------------------------
 John 		| Smith	   | valid_email@domain.com	| NA
 Mary		| Anderson | RandomEmail@something.net	| 0099123456789
 
@@ -32,7 +32,7 @@ In order to install this plugin:
 
 ### Plugin Settings
 
-This plugin includes two settings; EnableSendSMS and MessageBody. These setting can be set globally from the Plugin Manager -> (sendSMSInvites) -> Configure. The EnableSendSMS is set by default to No, this can be overridden on the survey level from the survey settings. The MessageBody settings gives the survey admin the space to write the SMS that will be send to the recipients. 
+This plugin includes two settings; EnableSendSMS and MessageBody. These setting can be set globally from the Plugin Manager -> (sendSMSInvites) -> Configure. The EnableSendSMS is set by default to No, this can be overridden on the survey level from the survey settings. The MessageBody settings gives the survey admin the space to write the SMS that will be sent to the recipients. 
 
 ## License
 
