@@ -69,55 +69,58 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 			
 			$ourTokenData = $this->event->get("token");			
 			$mobile = (string)$ourTokenData->attribute_1;
+			$type_of_email = $oEvent->get("type");
+			if(strcmp($type_of_email,'invitation')==0 or strcmp($type_of_email,'reminder')==0 ){
 			
-			//Next we check if this token should be sent via email or SMS
-			if(strcmp($mobile,'NA')!=0){
-			
-				// disable sending email for this token and send SMS
-				$this->event->set("send",false);
-				
-				// we get the token data and prepare the survey link 
-				$SMS_message = $this->get('MessageBody','survey',$surveyId);	// The MessageBody entered by the admin
-				$participantToken = $ourTokenData->token;
-				$participantFirstName = (string)$ourTokenData->firstname;
-				$participantLastName = (string)$ourTokenData->lastname;
-				$surveyLink = 'http://'. $_SERVER['SERVER_NAME'] . '/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
-				
-				$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=". $this->plugin_configs['google_api_key']; 
-				$shorten_parameters = array("longUrl" => $surveyLink);
-				$content_type = "Content-Type:application/json";
-				$jsonrequest = json_encode($shorten_parameters);
-				$short_URL="";			
-				
-				$response = $this->httpPost($api_url,$jsonrequest,$content_type);				
-				$decoded_response = json_decode($response);
-				
-				if (json_last_error() == JSON_ERROR_NONE){
-					$short_URL=$decoded_response->{'id'};
-				}
-				else {
-				   print "Failed to connect to Google URL Shortener API.";
-				   $short_URL=$surveyLink;
-				   //exit(1);
-				}
-				
-				// Setting up the default SMS message in case the admin left it empty.
-				if(empty($SMS_message)){
-					$SMS_message = "Dear {FIRSTNAME} {LASTNAME}, \n We invite you to participate in the survey: \n {SURVEYURL} \n Survey Team";
-				}
-		
-				// Replacing the placeholders in the Admin message, so as to have the participant's data.
-				$SMS_message_with_Replacement = str_replace("{FIRSTNAME}",$participantFirstName,$SMS_message);
-				$SMS_message_with_Replacement = str_replace("{LASTNAME}",$participantLastName,$SMS_message_with_Replacement);
-				$SMS_message_ready_to_be_sent = str_replace("{SURVEYURL}",$short_URL,$SMS_message_with_Replacement);
-								
-				// setting up the connection with SMS Service Provider then sending SMS msg
-				$SMS_service_url= "SMS_Provider_API";
-				$parameters=array("username" => $this->plugin_configs['SMS_Provider_Username'], "password" => $this->plugin_configs['SMS_Provider_Passowrd'], "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent);
-				$query_parameters=http_build_query($parameters);
-				$result_of_post = $this->httpPost($this->plugin_configs['SMS_service_url'],$query_parameters);
-				if($result_of_post === FALSE){
-					echo("SMS not sent. Please contact the administrator at survey_admin@xyz.com");
+				//Next we check if this token should be sent via email or SMS
+				if(strcmp($mobile,'NA')!=0){
+
+					// disable sending email for this token and send SMS
+					$this->event->set("send",false);
+
+					// we get the token data and prepare the survey link 
+					$SMS_message = $this->get('MessageBody','survey',$surveyId);	// The MessageBody entered by the admin
+					$participantToken = $ourTokenData->token;
+					$participantFirstName = (string)$ourTokenData->firstname;
+					$participantLastName = (string)$ourTokenData->lastname;
+					$surveyLink = 'http://'. $_SERVER['SERVER_NAME'] . '/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
+
+					$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=". $this->plugin_configs['google_api_key']; 
+					$shorten_parameters = array("longUrl" => $surveyLink);
+					$content_type = "Content-Type:application/json";
+					$jsonrequest = json_encode($shorten_parameters);
+					$short_URL="";			
+
+					$response = $this->httpPost($api_url,$jsonrequest,$content_type);				
+					$decoded_response = json_decode($response);
+
+					if (json_last_error() == JSON_ERROR_NONE){
+						$short_URL=$decoded_response->{'id'};
+					}
+					else {
+					   print "Failed to connect to Google URL Shortener API.";
+					   $short_URL=$surveyLink;
+					   //exit(1);
+					}
+
+					// Setting up the default SMS message in case the admin left it empty.
+					if(empty($SMS_message)){
+						$SMS_message = "Dear {FIRSTNAME} {LASTNAME}, \n We invite you to participate in the survey: \n {SURVEYURL} \n Survey Team";
+					}
+
+					// Replacing the placeholders in the Admin message, so as to have the participant's data.
+					$SMS_message_with_Replacement = str_replace("{FIRSTNAME}",$participantFirstName,$SMS_message);
+					$SMS_message_with_Replacement = str_replace("{LASTNAME}",$participantLastName,$SMS_message_with_Replacement);
+					$SMS_message_ready_to_be_sent = str_replace("{SURVEYURL}",$short_URL,$SMS_message_with_Replacement);
+
+					// setting up the connection with SMS Service Provider then sending SMS msg
+					$SMS_service_url= "SMS_Provider_API";
+					$parameters=array("username" => $this->plugin_configs['SMS_Provider_Username'], "password" => $this->plugin_configs['SMS_Provider_Passowrd'], "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent);
+					$query_parameters=http_build_query($parameters);
+					$result_of_post = $this->httpPost($this->plugin_configs['SMS_service_url'],$query_parameters);
+					if($result_of_post === FALSE){
+						echo("SMS not sent. Please contact the administrator at survey_admin@xyz.com");
+					}
 				}
 			}
 		}else{} // The SendSMSPlugin is not enabled. Don't change anything!	
