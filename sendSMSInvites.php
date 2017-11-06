@@ -7,7 +7,7 @@
 *	for email invites and the recipient's mobile number for SMS invites.
 *	It was tested with Limesurvey 2.67.3+170728
 *	@author: Mira Zeit
-*	@version: 1.0.0
+*	@version: 1.2.0
 */
 class sendSMSInvites extends \ls\pluginmanager\PluginBase
 {
@@ -15,13 +15,6 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 	protected $storage = 'DbStorage';
 	static protected $description = "Send SMS Functionality";
 	static protected $name = 'sendSMSInvites';
-	
-	protected $plugin_configs = array(
-		'google_api_key' => '******************************',
-		'SMS_service_url' => '*****************************',
-		'SMS_Provider_Username' => '*****',
-		'SMS_Provider_Passowrd' => '********'
-	);
 	
 	protected $settings =array(
 		'EnableSendSMS' => array(
@@ -60,21 +53,26 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 	*/
 	public function beforeTokenEmail()
 	{
-		// First we need to check if the sendEmailService is enabled by the admin for this specific survey
+		//Import Plugin configs
+		$config_path = (string)$this->getDir() . '\pluginConfig.php';
+		$plugin_configs = include($config_path);
+		
 		$oEvent = $this->getEvent();
 		$surveyId = (string)$oEvent->get('survey');
-		$isPluginEnabled = $this->get('EnableSendSMS','survey',$surveyId);
-				
-		if(strcmp($isPluginEnabled,'1')==0){
-			
-			$ourTokenData = $this->event->get("token");			
-			$mobile = (string)$ourTokenData->attribute_1;
-			$type_of_email = $oEvent->get("type");
-			if(strcmp($type_of_email,'invitation')==0 or strcmp($type_of_email,'reminder')==0 ){
-			
-				//Next we check if this token should be sent via email or SMS
-				if(strcmp($mobile,'NA')!=0){
+		$typeOfEmail = $oEvent->get("type");
 
+		// Before changing any settings we need to check that:
+			// 1. the sendSMSService is enabled by the admin for this specific survey
+		$pluginEnabled = strcmp($this->get('EnableSendSMS','survey',$surveyId),'1')==0;
+			// 2. This event was launched for an invitation email or a reminder ONLY
+		$vaildEmailType = ((strcmp($typeOfEmail,'invitation')==0) or (strcmp($typeOfEmail,'reminder')==0));
+		$ourTokenData = $oEvent->get("token");
+		if($pluginEnabled and $vaildEmailType){
+			// Then we need to check if the admin added an extra attribute
+			if(isset($ourTokenData->attribute_1)){
+				// 3. This invite should be send via SMS and not to the Email account
+				$mobile = (string)$ourTokenData->attribute_1;
+				if(strcmp($mobile,'NA')!=0 and !empty($mobile)){
 					// disable sending email for this token and send SMS
 					$this->event->set("send",false);
 
@@ -85,7 +83,7 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 					$participantLastName = (string)$ourTokenData->lastname;
 					$surveyLink = 'http://'. $_SERVER['SERVER_NAME'] . '/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
 
-					$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=". $this->plugin_configs['google_api_key']; 
+					$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=". $plugin_configs['google_api_key']; 
 					$shorten_parameters = array("longUrl" => $surveyLink);
 					$content_type = "Content-Type:application/json";
 					$jsonrequest = json_encode($shorten_parameters);
@@ -114,29 +112,31 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 					$SMS_message_ready_to_be_sent = str_replace("{SURVEYURL}",$short_URL,$SMS_message_with_Replacement);
 
 					// setting up the connection with SMS Service Provider then sending SMS msg
-					$SMS_service_url= "SMS_Provider_API";
-					$parameters=array("username" => $this->plugin_configs['SMS_Provider_Username'], "password" => $this->plugin_configs['SMS_Provider_Passowrd'], "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent);
-					$query_parameters=http_build_query($parameters);
-					$result_of_post = $this->httpPost($this->plugin_configs['SMS_service_url'],$query_parameters);
+					$query_parameters=http_build_query(array("username" => $plugin_configs['SMS_Provider_Username'], "password" => $plugin_configs['SMS_Provider_Passowrd'], "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent));
+					$result_of_post = $this->httpPost($plugin_configs['SMS_service_url'],$query_parameters);
 					if($result_of_post === FALSE){
 						echo("SMS not sent. Please contact the administrator at survey_admin@xyz.com");
+						exit;
 					}
 				}
+			}else{
+				echo("SMS not sent. Please add an extra attribute with the mobile number or NA for emails.");
+				exit;
 			}
 		}else{} // The SendSMSPlugin is not enabled. Don't change anything!	
 	}
 	
 	/**
-	* 	This function handles sending the http request. 
-	*   Proxy settings should be configured. 
-	* 	The third argument (request_header) is optional
-	*   returns the response from the external page/API
+	*  This function handles sending the http request. 
+	*  Proxy settings should be configured. 
+	*  The third argument (request_header) is optional
+	*  returns the response from the external page/API
 	*/
 	private function httpPost($request_url,$request_params,$request_header=null)
 	{	
 		$curlHandle    = curl_init();	
-		$proxy = 'PROXY_URL:PORT_NUMBER';		// These settings needs to be changed !!
-		$proxyauth = 'USERNAME:PASSWORD';
+		$proxy = 'PROXY_URL:PORT_NUMBER';	// These settings needs to be changed !!
+		$proxyauth = 'USERNAME:PASSWORD';	// If there is no proxy delete these lines
 		
 		curl_setopt($curlHandle, CURLOPT_URL, $request_url);
 		curl_setopt($curlHandle, CURLOPT_POST, true);
