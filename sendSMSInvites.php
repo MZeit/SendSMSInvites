@@ -65,22 +65,22 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 			// 1. the sendSMSService is enabled by the admin for this specific survey
 		$pluginEnabled = strcmp($this->get('EnableSendSMS','survey',$surveyId),'1')==0;
 			// 2. This event was launched for an invitation email or a reminder ONLY
-		$vaildEmailType = ((strcmp($typeOfEmail,'invitation')==0) or (strcmp($typeOfEmail,'reminder')==0));
+		$vaildEmailType = (((strcmp($typeOfEmail,'invitation')==0) or (strcmp($typeOfEmail,'reminder')==0)) or (strcmp($typeOfEmail,'confirm')==0));
 		$ourTokenData = $oEvent->get("token");
 		if($pluginEnabled and $vaildEmailType){
 			// Then we need to check if the admin added an extra attribute
-			if(isset($ourTokenData->attribute_1)){
+			if(isset($ourTokenData['attribute_1'])){
 				// 3. This invite should be send via SMS and not to the Email account
-				$mobile = (string)$ourTokenData->attribute_1;
+				$mobile = (string)$ourTokenData['attribute_1'];
 				if(strcmp($mobile,'NA')!=0 and !empty($mobile)){
 					// disable sending email for this token and send SMS
 					$this->event->set("send",false);
 
 					// we get the token data and prepare the survey link 
 					$SMS_message = $this->get('MessageBody','survey',$surveyId);	// The MessageBody entered by the admin
-					$participantToken = $ourTokenData->token;
-					$participantFirstName = (string)$ourTokenData->firstname;
-					$participantLastName = (string)$ourTokenData->lastname;
+					$participantToken = $ourTokenData['token'];
+					$participantFirstName = (string)$ourTokenData['firstname'];
+					$participantLastName = (string)$ourTokenData['lastname'];
 					$surveyLink = 'http://'. $_SERVER['SERVER_NAME'] . '/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
 
 					$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=". $plugin_configs['google_api_key']; 
@@ -95,10 +95,9 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 					if (json_last_error() == JSON_ERROR_NONE){
 						$short_URL=$decoded_response->{'id'};
 					}
-					else {
+					if(!$response){
 					   print "Failed to connect to Google URL Shortener API.";
 					   $short_URL=$surveyLink;
-					   //exit(1);
 					}
 
 					// Setting up the default SMS message in case the admin left it empty.
@@ -120,7 +119,7 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 					}
 				}
 			}else{
-				echo("SMS not sent. Please add an extra attribute with the mobile number or NA for emails.");
+				echo("sendSMSInvites Plugin is enabled. If you do not wish to send SMS invitations, disable it. If you intend to use it, the SMS was not sent. Please add an extra attribute with the mobile number or NA for emails.");
 				exit;
 			}
 		}else{} // The SendSMSPlugin is not enabled. Don't change anything!	
