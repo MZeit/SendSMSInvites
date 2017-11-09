@@ -64,7 +64,7 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 		// Before changing any settings we need to check that:
 			// 1. the sendSMSService is enabled by the admin for this specific survey
 		$pluginEnabled = strcmp($this->get('EnableSendSMS','survey',$surveyId),'1')==0;
-			// 2. This event was launched for an invitation email or a reminder ONLY
+			// 2. Check the type of email, invitaiton or reminder => send, confirmation just ignore (not included in my plans :/).
 		$vaildEmailType = (((strcmp($typeOfEmail,'invitation')==0) or (strcmp($typeOfEmail,'reminder')==0)) or (strcmp($typeOfEmail,'confirm')==0));
 		$ourTokenData = $oEvent->get("token");
 		if($pluginEnabled and $vaildEmailType){
@@ -109,14 +109,17 @@ class sendSMSInvites extends \ls\pluginmanager\PluginBase
 					$SMS_message_with_Replacement = str_replace("{FIRSTNAME}",$participantFirstName,$SMS_message);
 					$SMS_message_with_Replacement = str_replace("{LASTNAME}",$participantLastName,$SMS_message_with_Replacement);
 					$SMS_message_ready_to_be_sent = str_replace("{SURVEYURL}",$short_URL,$SMS_message_with_Replacement);
-
-					// setting up the connection with SMS Service Provider then sending SMS msg
-					$query_parameters=http_build_query(array("username" => $plugin_configs['SMS_Provider_Username'], "password" => $plugin_configs['SMS_Provider_Passowrd'], "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent));
-					$result_of_post = $this->httpPost($plugin_configs['SMS_service_url'],$query_parameters);
-					if($result_of_post === FALSE){
-						echo("SMS not sent. Please contact the administrator at survey_admin@xyz.com");
-						exit;
-					}
+					
+					// Since I don't want to send confirmation SMS, only for reminder and confirmation
+					if((strcmp($typeOfEmail,'invitation')==0) or (strcmp($typeOfEmail,'reminder')==0)){
+						// setting up the connection with SMS Service Provider then sending SMS msg
+						$query_parameters=http_build_query(array("username" => $plugin_configs['SMS_Provider_Username'], "password" => $plugin_configs['SMS_Provider_Passowrd'], "to" => $mobile, "text"=>$SMS_message_ready_to_be_sent));
+						$result_of_post = $this->httpPost($plugin_configs['SMS_service_url'],$query_parameters);
+						if($result_of_post === FALSE){
+							echo("SMS not sent. Please contact the administrator at survey_admin@xyz.com");
+							exit;
+						}
+					}else{}	// Confirmation don't want to send --> change this if you want to enter message and send confirmation SMS
 				}
 			}else{
 				echo("sendSMSInvites Plugin is enabled. If you do not wish to send SMS invitations, disable it. If you intend to use it, the SMS was not sent. Please add an extra attribute with the mobile number or NA for emails.");
