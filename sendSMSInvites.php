@@ -1,15 +1,15 @@
 <?php
 /*
-*	This class implements a plugin that extends Limesurvey v.2.6+ 
+*	This class implements a plugin that extends Limesurvey v.3.15+ 
 *	The sendSMSInvites Plugin adds the feature of sending survey invitations to mobiles via SMS
-*	To differentiate between the survey invites that should be sent via email and 
-*	those to be sent via SMS, an extra attribute (attribute_1) was added with the value NA 
+*	To differentiate between the survey invites that will be sent via email and 
+*	those to be sent via SMS, an extra attribute (attribute_1) needs to be added with the value NA 
 *	for email invites and the recipient's mobile number for SMS invites.
-*	It was tested with Limesurvey 2.67.3+170728
+*	It is tested with Limesurvey Version 3.15.0+181008
 *	@author: Mira Zeit
-*	@version: 1.2.0
+*	@version: 2.0.0
 */
-class sendSMSInvites extends \ls\pluginmanager\PluginBase
+class sendSMSInvites extends \LimeSurvey\PluginManager\PluginBase
 {
 	// Extension Info
 	protected $storage = 'DbStorage';
