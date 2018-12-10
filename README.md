@@ -19,16 +19,20 @@ Note: The mobile number needs to be in the 1st extra attribute for the plugin to
 
 ### Prerequisites
 
-* Limesurvey v.2.6+
+* Limesurvey Version 3.15
 * An account at an SMS Gateway which provides a HTTP/HTTPS interface to interact with the plugin via HTTP post requests. 
+
+### SMS Gateway set Up
+The SMS Gateway account credentials should be saved in the pluginConfig.php file, depending on the gateway of your choice, the authentication method for your account can be a username & password, OAuth key or an API key. Some changes in line 116 might be needed accordingly. Read the documentation of the Gateway HTTP request to ensure compatibility.
 
 ### Installation
 
 In order to install this plugin:
 1.	Download the php file and save it locally
-2.	Create a folder in the directory plugins located at your Limesurvey server, the folder created has to have the same name as the plugin.
-3.	Place the php file in the folder created.
-4.	After refreshing the admin page, activate the plugin from Configuration -> Plugin Manager Panel.
+2.  Purchase credit from a SMS Gateway and edit the pluginConfig.php file with the credentials.
+3.	Create a folder in the directory plugins located at your Limesurvey server, the folder created has to have the same name as the plugin.
+4.	Place the php file in the folder created.
+5.	After refreshing the admin page, activate the plugin from Configuration -> Plugin Manager Panel.
 
 ### Plugin Settings
 
