@@ -7,7 +7,7 @@
 *	for email invites and the recipient's mobile number for SMS invites.
 *	It is tested with Limesurvey Version 3.15.0+181008
 *	@author: Mira Zeit
-*	@version: 2.0.0
+*	@version: 2.0.1
 */
 class sendSMSInvites extends \LimeSurvey\PluginManager\PluginBase
 {
@@ -83,6 +83,7 @@ class sendSMSInvites extends \LimeSurvey\PluginManager\PluginBase
 					$participantLastName = (string)$ourTokenData['lastname'];
 					$surveyLink = 'http://'. $_SERVER['SERVER_NAME'] . '/index.php/survey/index/sid/' . $surveyId . '/token/' . $participantToken;		
 
+					/* This part will no longer be used - (Optional)
 					$api_url = "https://www.googleapis.com/urlshortener/v1/url?key=". $plugin_configs['google_api_key']; 
 					$shorten_parameters = array("longUrl" => $surveyLink);
 					$content_type = "Content-Type:application/json";
@@ -98,7 +99,7 @@ class sendSMSInvites extends \LimeSurvey\PluginManager\PluginBase
 					if(!$response){
 					   print "Failed to connect to Google URL Shortener API.";
 					   $short_URL=$surveyLink;
-					}
+					}*/
 
 					// Setting up the default SMS message in case the admin left it empty.
 					if(empty($SMS_message)){
@@ -108,7 +109,7 @@ class sendSMSInvites extends \LimeSurvey\PluginManager\PluginBase
 					// Replacing the placeholders in the Admin message, so as to have the participant's data.
 					$SMS_message_with_Replacement = str_replace("{FIRSTNAME}",$participantFirstName,$SMS_message);
 					$SMS_message_with_Replacement = str_replace("{LASTNAME}",$participantLastName,$SMS_message_with_Replacement);
-					$SMS_message_ready_to_be_sent = str_replace("{SURVEYURL}",$short_URL,$SMS_message_with_Replacement);
+					$SMS_message_ready_to_be_sent = str_replace("{SURVEYURL}",$surveyLink,$SMS_message_with_Replacement);
 					
 					// Since I don't want to send confirmation SMS, only for reminder and confirmation
 					if((strcmp($typeOfEmail,'invitation')==0) or (strcmp($typeOfEmail,'reminder')==0)){
