@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <metadata>
+        <name>sendSMSInvites</name>
+        <type>plugin</type>
+        <creationDate>2019-12-03</creationDate>
+        <lastUpdate>2022-01-19</lastUpdate>
+        <author>MZeit</author>
+        <authorUrl>https://github.com/MZeit</authorUrl>
+        <supportUrl>https://github.com/MZeit/SendSMSInvites/issues</supportUrl>
+        <version>1.0.0</version>
+        <license>MIT License</license>
+        <description><![CDATA[This Plugin is used to send SMS invitations.]]></description>
+    </metadata>
+    <compatibility>
+        <version>3.15</version>
+        <version>4.0</version>
+        <version>5.0</version>
+    </compatibility>
+    <updaters disabled="disabled"/>
+</config>
