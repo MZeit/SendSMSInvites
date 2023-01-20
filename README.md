@@ -28,10 +28,10 @@ The SMS Gateway account credentials should be saved in the pluginConfig.php file
 ### Installation
 
 In order to install this plugin:
-1.	Download the php file and save it locally
-2.  Purchase credit from a SMS Gateway and edit the pluginConfig.php file with the credentials.
+1.	Download the `php files` as well as the `config.xml` and save it locally
+2.  Purchase credit from a SMS Gateway and edit the `pluginConfig.php` file with the credentials.
 3.	Create a folder in the directory plugins located at your Limesurvey server, the folder created has to have the same name as the plugin.
-4.	Place the php file in the folder created.
+4.	Place the `php files` as weel as the `config.xml` in the folder created.
 5.	After refreshing the admin page, activate the plugin from Configuration -> Plugin Manager Panel.
 6. Optional Step, if you wish to shorten the survey URL in the SMS, uncomment the lines 86 - 102. Then, create an account at a service that shortens URLs (like Bitly, ...) and change the code accordingly to set it up. 
 
